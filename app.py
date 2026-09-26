@@ -33,14 +33,49 @@ st.caption(
 
 model = get_model()
 
+# Median sensor readings for each class in the training data — used as
+# realistic one-click scenarios rather than arbitrary numbers.
+SCENARIOS = {
+    "Custom": None,
+    "Empty room, lights off (typical unoccupied reading)": {
+        "Temperature": 20.20, "Humidity": 26.19, "Light": 0.0, "CO2": 446.0, "HumidityRatio": 0.00378,
+    },
+    "Meeting in progress (typical occupied reading)": {
+        "Temperature": 21.77, "Humidity": 26.44, "Light": 454.0, "CO2": 944.0, "HumidityRatio": 0.00435,
+    },
+    "Empty room, lights left on (edge case)": {
+        "Temperature": 20.20, "Humidity": 26.19, "Light": 400.0, "CO2": 450.0, "HumidityRatio": 0.00378,
+    },
+}
+
+DEFAULTS = {"Temperature": 23.2, "Humidity": 27.3, "Light": 450.0, "CO2": 720.0, "HumidityRatio": 0.0048}
+KEYS = {"Temperature": "temp_in", "Humidity": "humidity_in", "Light": "light_in", "CO2": "co2_in", "HumidityRatio": "hr_in"}
+for field, key in KEYS.items():
+    st.session_state.setdefault(key, DEFAULTS[field])
+
+
+def apply_scenario():
+    preset = SCENARIOS[st.session_state["scenario_choice"]]
+    if preset:
+        for field, key in KEYS.items():
+            st.session_state[key] = preset[field]
+
+
+st.selectbox(
+    "Try a scenario (from real sensor data)",
+    list(SCENARIOS.keys()),
+    key="scenario_choice",
+    on_change=apply_scenario,
+)
+
 col1, col2 = st.columns(2)
 with col1:
-    temperature = st.number_input("Temperature (°C)", value=23.2, step=0.1)
-    humidity = st.number_input("Humidity (%)", value=27.3, step=0.1)
-    light = st.number_input("Light (lux)", value=450.0, step=1.0)
+    temperature = st.number_input("Temperature (°C)", step=0.1, key=KEYS["Temperature"])
+    humidity = st.number_input("Humidity (%)", step=0.1, key=KEYS["Humidity"])
+    light = st.number_input("Light (lux)", step=1.0, key=KEYS["Light"])
 with col2:
-    co2 = st.number_input("CO2 (ppm)", value=720.0, step=1.0)
-    humidity_ratio = st.number_input("Humidity ratio", value=0.0048, step=0.0001, format="%.4f")
+    co2 = st.number_input("CO2 (ppm)", step=1.0, key=KEYS["CO2"])
+    humidity_ratio = st.number_input("Humidity ratio", step=0.0001, format="%.4f", key=KEYS["HumidityRatio"])
 
 if st.button("Predict occupancy", type="primary"):
     row = pd.DataFrame(

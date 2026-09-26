@@ -1,6 +1,6 @@
 # Room Occupancy Detection
 
-**Live demo:** https://room-occupancy-detection.streamlit.app
+**Live demo:** https://room-occupancy-detection-xysl7sqhjqjsb54rmtyyvf.streamlit.app
 
 Binary classification of room occupancy (occupied / not occupied) from
 ambient sensor readings — temperature, humidity, light, CO2, and humidity
